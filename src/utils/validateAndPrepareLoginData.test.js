@@ -43,7 +43,7 @@ describe('validateAndPrepareLoginData', () => {
       username: 'user123',
       password: 'password123',
       credential: mockCredential,
-      note: 'This is a note',
+      comment: 'This is a comment',
       websites: ['https://example.com'],
       customFields: [{ name: 'field1', value: 'value1', type: 'text' }]
     }
@@ -69,7 +69,7 @@ describe('validateAndPrepareLoginData', () => {
       username: undefined,
       password: undefined,
       credential: undefined,
-      note: undefined,
+      comment: undefined,
       websites: ['https://example.com'],
       customFields: []
     })
@@ -114,7 +114,7 @@ describe('validateAndPrepareLoginData', () => {
       username: null,
       password: undefined,
       credential: null,
-      note: null,
+      comment: null,
       websites: ['https://example.com'],
       customFields: null
     }
@@ -126,7 +126,7 @@ describe('validateAndPrepareLoginData', () => {
       username: null,
       password: undefined,
       credential: null,
-      note: null,
+      comment: null,
       websites: ['https://example.com'],
       customFields: []
     })

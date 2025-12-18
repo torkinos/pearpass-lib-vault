@@ -19,7 +19,7 @@ describe('validateAndPrepareIdentityData', () => {
     city: 'New York',
     region: 'NY',
     country: 'USA',
-    note: 'Some notes',
+    comment: 'Some comments',
     customFields: []
   }
 

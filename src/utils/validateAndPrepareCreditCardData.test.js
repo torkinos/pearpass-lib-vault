@@ -18,7 +18,7 @@ describe('validateAndPrepareCreditCardData', () => {
       expireDate: '12/25',
       securityCode: '123',
       pinCode: '1234',
-      note: 'Personal use only',
+      comment: 'Personal use only',
       customFields: [{ key: 'issuer', value: 'Visa' }]
     }
 
@@ -44,7 +44,7 @@ describe('validateAndPrepareCreditCardData', () => {
       expireDate: undefined,
       securityCode: undefined,
       pinCode: undefined,
-      note: undefined,
+      comment: undefined,
       customFields: []
     })
     expect(validateAndPrepareCustomFields).toHaveBeenCalledWith(undefined)
