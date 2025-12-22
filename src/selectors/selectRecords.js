@@ -17,15 +17,6 @@ export const selectRecords = ({ filters, sort } = {}) =>
             return false
           }
 
-          if (
-            !!filters?.searchPattern?.length &&
-            !!record?.data &&
-            !matchPatternToValue(filters.searchPattern, record.data.title) &&
-            !matchPatternToValue(filters.searchPattern, record.folder)
-          ) {
-            return false
-          }
-
           if (filters?.type && record.type !== filters.type) {
             return false
           }
@@ -34,6 +25,10 @@ export const selectRecords = ({ filters, sort } = {}) =>
             typeof filters?.isFavorite === 'boolean' &&
             !!record.isFavorite !== filters.isFavorite
           ) {
+            return false
+          }
+
+          if (!matchRecordToSearchPattern(filters?.searchPattern, record)) {
             return false
           }
 
@@ -63,3 +58,37 @@ export const selectRecords = ({ filters, sort } = {}) =>
       }
     }
   )
+
+/**
+ * @param {string} searchPattern
+ * @param {Object} record
+ */
+const matchRecordToSearchPattern = (searchPattern, record) => {
+  if (!searchPattern?.length || !record?.data) {
+    return true
+  }
+
+  const {
+    title,
+    username,
+    email,
+    note,
+    name,
+    fullName,
+    websites = []
+  } = record.data
+
+  const valuesToSearch = [
+    title,
+    username,
+    email,
+    note,
+    name,
+    fullName,
+    ...websites
+  ]
+
+  return valuesToSearch.some((value) =>
+    matchPatternToValue(searchPattern, value)
+  )
+}

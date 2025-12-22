@@ -10,7 +10,8 @@ describe('userSlice', () => {
     data: {
       hasPasswordSet: false,
       isLoggedIn: false,
-      isVaultOpen: false
+      isVaultOpen: false,
+      masterPasswordStatus: null
     }
   }
 

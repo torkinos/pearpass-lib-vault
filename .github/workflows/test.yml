@@ -1,0 +1,58 @@
+name: Test check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.NOXTTON_BOT_PAT }}
+
+      - name: Configure Git credentials
+        run: |
+          git config --global --add url."https://${{ secrets.NOXTTON_BOT_PAT }}:x-oauth-basic@github.com/".insteadOf "git+ssh://git@github.com/"
+          git config --global --add url."https://${{ secrets.NOXTTON_BOT_PAT }}:x-oauth-basic@github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://${{ secrets.NOXTTON_BOT_PAT }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@tetherto"
+
+      - name: Checkout peer dependencies from GitHub
+        run: |
+          PEER_DEPS=$(node -pe "Object.keys(require('./package.json').peerDependencies || {}).filter(dep => dep.startsWith('pear-')).join(' ')")
+          for dep in $PEER_DEPS; do
+            echo "Checking out $dep..."
+            git clone https://${{ secrets.NOXTTON_BOT_PAT }}@github.com/noxtton/$dep.git $dep
+          done
+
+      - name: Install dependencies and peer dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          
+          PEER_DEPS=$(node -pe "Object.keys(require('./package.json').peerDependencies || {}).join(' ')")
+          for dep in $PEER_DEPS; do
+            if [ -d "./$dep" ]; then
+              echo "Installing local $dep..."
+              npm install file:./$dep --legacy-peer-deps --no-save
+            else
+              echo "Installing $dep from registry..."
+              npm install $dep --legacy-peer-deps --no-save
+            fi
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NOXTTON_BOT_PAT }}
+
+      - name: Run tests
+        run: npm test

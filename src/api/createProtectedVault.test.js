@@ -87,20 +87,26 @@ describe('createProtectedVault', () => {
       ciphertext: 'encrypted-data',
       nonce: 'nonce-value'
     })
+    // vaultsAdd stores vault without hashedPassword
     expect(pearpassVaultClient.vaultsAdd).toHaveBeenCalledWith(
       `vault/${vault.id}`,
       {
         ...vault,
-        encryption: encryptionData
+        encryption: {
+          ciphertext: encryptionData.ciphertext,
+          nonce: encryptionData.nonce,
+          salt: encryptionData.salt
+        }
       }
     )
     expect(pearpassVaultClient.activeVaultInit).toHaveBeenCalledWith({
       id: vault.id,
       encryptionKey: 'encryption-key'
     })
-    expect(pearpassVaultClient.activeVaultAdd).toHaveBeenCalledWith(
-      'vault',
-      vault
-    )
+    // activeVaultAdd stores vault with hashedPassword
+    expect(pearpassVaultClient.activeVaultAdd).toHaveBeenCalledWith('vault', {
+      ...vault,
+      encryption: encryptionData
+    })
   })
 })

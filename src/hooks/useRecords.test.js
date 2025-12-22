@@ -200,9 +200,11 @@ describe('useRecords', () => {
       useRecords({ onCompleted: onCompletedMock })
     )
 
-    await act(async () => {
-      await result.current.updateRecords({ id: '123' })
-    })
+    await expect(
+      act(async () => {
+        await result.current.updateRecords({ id: '123' })
+      })
+    ).rejects.toThrow('Failed to update records')
 
     expect(onCompletedMock).not.toHaveBeenCalled()
   })

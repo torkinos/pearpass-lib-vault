@@ -3,8 +3,6 @@ import { pearpassVaultClient } from '../instances'
 
 jest.mock('../instances', () => ({
   pearpassVaultClient: {
-    vaultsGetStatus: jest.fn(),
-    vaultsGet: jest.fn(),
     decryptVaultKey: jest.fn(),
     vaultsInit: jest.fn()
   }
@@ -36,32 +34,7 @@ describe('initWithCredentials', () => {
     ).rejects.toThrow('Missing required parameters')
   })
 
-  it('returns true if credentials match existing master encryption', async () => {
-    pearpassVaultClient.vaultsGetStatus.mockResolvedValue({ status: true })
-    pearpassVaultClient.vaultsGet.mockResolvedValue(validParams)
-
-    await expect(initWithCredentials(validParams)).resolves.toBe(true)
-    expect(pearpassVaultClient.vaultsGetStatus).toHaveBeenCalled()
-    expect(pearpassVaultClient.vaultsGet).toHaveBeenCalledWith(
-      'masterEncryption'
-    )
-  })
-
-  it('throws error if credentials do not match existing master encryption', async () => {
-    pearpassVaultClient.vaultsGetStatus.mockResolvedValue({ status: true })
-    pearpassVaultClient.vaultsGet.mockResolvedValue({
-      ciphertext: 'wrong',
-      nonce: 'wrong',
-      hashedPassword: 'wrong'
-    })
-
-    await expect(initWithCredentials(validParams)).rejects.toThrow(
-      'Provided credentials do not match existing master encryption'
-    )
-  })
-
   it('throws error if decryptVaultKey returns falsy', async () => {
-    pearpassVaultClient.vaultsGetStatus.mockResolvedValue({ status: false })
     pearpassVaultClient.decryptVaultKey.mockResolvedValue(null)
 
     await expect(initWithCredentials(validParams)).rejects.toThrow(
@@ -69,8 +42,7 @@ describe('initWithCredentials', () => {
     )
   })
 
-  it('calls vaultsInit and returns true when vault is not initialized', async () => {
-    pearpassVaultClient.vaultsGetStatus.mockResolvedValue({ status: false })
+  it('calls vaultsInit and returns true when decryption succeeds', async () => {
     pearpassVaultClient.decryptVaultKey.mockResolvedValue('decryptedKey')
     pearpassVaultClient.vaultsInit.mockResolvedValue()
 

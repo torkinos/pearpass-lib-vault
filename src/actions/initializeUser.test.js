@@ -6,13 +6,15 @@ jest.mock('../api/getMasterPasswordEncryption')
 jest.mock('../instances', () => ({
   pearpassVaultClient: {
     vaultsGetStatus: jest.fn(),
-    activeVaultGetStatus: jest.fn()
+    activeVaultGetStatus: jest.fn(),
+    getMasterPasswordStatus: jest.fn()
   }
 }))
 
 describe('initializeUser', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    pearpassVaultClient.getMasterPasswordStatus.mockResolvedValue(null)
   })
 
   it('should call all required API methods', async () => {
@@ -51,7 +53,8 @@ describe('initializeUser', () => {
     expect(result.payload).toEqual({
       hasPasswordSet: true,
       isLoggedIn: true,
-      isVaultOpen: true
+      isVaultOpen: true,
+      masterPasswordStatus: null
     })
   })
 
@@ -68,7 +71,8 @@ describe('initializeUser', () => {
     expect(result.payload).toEqual({
       hasPasswordSet: false,
       isLoggedIn: true,
-      isVaultOpen: true
+      isVaultOpen: true,
+      masterPasswordStatus: null
     })
   })
 
@@ -89,7 +93,8 @@ describe('initializeUser', () => {
     expect(result.payload).toEqual({
       hasPasswordSet: true,
       isLoggedIn: false,
-      isVaultOpen: false
+      isVaultOpen: false,
+      masterPasswordStatus: null
     })
   })
 
@@ -110,7 +115,8 @@ describe('initializeUser', () => {
     expect(result.payload).toEqual({
       hasPasswordSet: true,
       isLoggedIn: true,
-      isVaultOpen: false
+      isVaultOpen: false,
+      masterPasswordStatus: null
     })
   })
 })

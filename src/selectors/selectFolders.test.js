@@ -94,20 +94,39 @@ describe('selectFolders', () => {
     })
   })
 
-  test('should pass search pattern filter', () => {
+  test('should pass isFolder filter to selectRecords', () => {
     mockSelectRecords.mockImplementation(() => () => ({
       isLoading: false,
       data: []
     }))
 
-    const searchPattern = 'test'
-    selectFolders({ searchPattern })
+    selectFolders()
 
     expect(mockSelectRecords).toHaveBeenCalledWith({
       filters: {
-        searchPattern: 'test',
         isFolder: true
       }
     })
+  })
+
+  test('should filter folders by search pattern', () => {
+    const mockRecords = [
+      { id: 1, folder: 'Work', isFavorite: false },
+      { id: 2, folder: 'Personal', isFavorite: false },
+      { id: 3, folder: 'Documents', isFavorite: false }
+    ]
+
+    mockSelectRecords.mockImplementation(() => () => ({
+      isLoading: false,
+      data: mockRecords
+    }))
+
+    const selector = selectFolders({ searchPattern: 'work' })
+    const result = selector({})
+
+    // Only 'Work' folder should match the pattern
+    expect(result.data.customFolders).toHaveProperty('Work')
+    expect(result.data.customFolders).not.toHaveProperty('Personal')
+    expect(result.data.customFolders).not.toHaveProperty('Documents')
   })
 })

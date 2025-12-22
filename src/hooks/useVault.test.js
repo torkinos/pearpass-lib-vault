@@ -5,7 +5,7 @@ import { useVault } from './useVault'
 import { addDevice as addDeviceAction } from '../actions/addDevice'
 import { getVaultById } from '../actions/getVaultById'
 import { resetState } from '../actions/resetState'
-import { updateVault } from '../actions/updateVault'
+import { updateProtectedVault } from '../actions/updateProtectedVault'
 import { checkVaultIsProtected } from '../api/checkVaultIsProtected'
 
 jest.mock('react-redux', () => ({
@@ -21,16 +21,12 @@ jest.mock('../actions/resetState', () => ({
   resetState: jest.fn()
 }))
 
-jest.mock('../actions/updateVault', () => ({
-  updateVault: jest.fn()
+jest.mock('../actions/updateProtectedVault', () => ({
+  updateProtectedVault: jest.fn()
 }))
 
 jest.mock('../actions/addDevice', () => ({
   addDevice: jest.fn()
-}))
-
-jest.mock('../api/getVaultEncryption', () => ({
-  getVaultEncryption: jest.fn()
 }))
 
 jest.mock('../api/initListener', () => ({
@@ -149,7 +145,7 @@ describe('useVault', () => {
     expect(mockDispatch).toHaveBeenCalledWith({ type: 'RESET_STATE' })
   })
 
-  test('updateVault should update the vault with provided data', async () => {
+  test('updateProtectedVault should update the vault with provided data', async () => {
     const mockVaultUpdate = {
       name: 'Updated Vault',
       password: 'new-password',
@@ -166,10 +162,10 @@ describe('useVault', () => {
     const { result } = renderHook(() => useVault())
 
     await act(async () => {
-      await result.current.updateVault('vault-123', mockVaultUpdate)
+      await result.current.updateProtectedVault('vault-123', mockVaultUpdate)
     })
 
-    expect(updateVault).toHaveBeenCalledWith({
+    expect(updateProtectedVault).toHaveBeenCalledWith({
       vaultId: 'vault-123',
       name: 'Updated Vault',
       currentPassword: 'current-password',
@@ -177,7 +173,7 @@ describe('useVault', () => {
     })
   })
 
-  test('updateVault should throw error if updateVaultAction fails', async () => {
+  test('updateProtectedVault should throw error if updateProtectedVault action fails', async () => {
     const mockVaultUpdate = {
       name: 'Updated Vault',
       password: 'new-password',
@@ -196,7 +192,7 @@ describe('useVault', () => {
     const { result } = renderHook(() => useVault())
 
     await expect(
-      result.current.updateVault('vault-123', mockVaultUpdate)
+      result.current.updateProtectedVault('vault-123', mockVaultUpdate)
     ).rejects.toThrow('Error updating vault')
   })
 

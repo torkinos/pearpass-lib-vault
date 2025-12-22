@@ -38,7 +38,9 @@ describe('processFiles', () => {
     const result = processFiles(files)
     expect(generateUniqueId).toHaveBeenCalled()
     expect(result.files).toEqual([{ id: mockId, name: 'test.txt' }])
-    expect(result.buffersWithId).toEqual([{ id: mockId, buffer: mockBuffer }])
+    expect(result.buffersWithId).toEqual([
+      { id: mockId, buffer: mockBuffer, name: 'test.txt' }
+    ])
   })
 
   it('should assign default name if name is missing', () => {
@@ -57,6 +59,8 @@ describe('processFiles', () => {
       { id: 'id1', name: 'file2.txt' },
       { id: mockId, name: 'file2.txt' }
     ])
-    expect(result.buffersWithId).toEqual([{ id: mockId, buffer: mockBuffer }])
+    expect(result.buffersWithId).toEqual([
+      { id: mockId, buffer: mockBuffer, name: 'file2.txt' }
+    ])
   })
 })

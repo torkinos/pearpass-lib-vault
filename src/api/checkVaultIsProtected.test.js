@@ -31,9 +31,8 @@ describe('checkVaultIsProtected', () => {
       id: 'vault2',
       encryption: {
         ciphertext: 'some-ciphertext',
-        nonce: 'some-nonce',
-        hashedPassword: null,
-        salt: 'some-salt'
+        nonce: 'some-nonce'
+        // salt is missing
       }
     }
 

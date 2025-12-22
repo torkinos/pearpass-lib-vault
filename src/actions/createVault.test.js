@@ -1,15 +1,16 @@
 import { generateUniqueId } from 'pear-apps-utils-generate-unique-id'
 
 import { createVault } from './createVault'
-import { createVault as createVaultApi } from '../api/createVault'
+import { createProtectedVault } from '../api/createProtectedVault'
+import { createUnprotectedVault } from '../api/createUnprotectedVault'
 import { VERSION } from '../constants/version'
-
-jest.mock('../api/createVault', () => ({
-  createVault: jest.fn()
-}))
 
 jest.mock('../api/createProtectedVault', () => ({
   createProtectedVault: jest.fn()
+}))
+
+jest.mock('../api/createUnprotectedVault', () => ({
+  createUnprotectedVault: jest.fn()
 }))
 
 jest.mock('pear-apps-utils-generate-unique-id', () => ({
@@ -34,7 +35,8 @@ describe('createVault', () => {
     dispatch = jest.fn()
     getState = jest.fn()
 
-    createVaultApi.mockResolvedValue({})
+    createUnprotectedVault.mockResolvedValue({})
+    createProtectedVault.mockResolvedValue({})
   })
 
   it('should create a vault with correct properties', async () => {
@@ -67,13 +69,15 @@ describe('createVault', () => {
       createdAt: mockDate,
       updatedAt: mockDate
     })
+
+    expect(createProtectedVault).toHaveBeenCalled()
   })
 
-  it('should call createVaultApi with correct parameters', async () => {
+  it('should call createUnprotectedVault when no password is provided', async () => {
     const thunk = createVault({ name: vaultName })
     await thunk(dispatch, getState)
 
-    expect(createVaultApi).toHaveBeenCalledWith({
+    expect(createUnprotectedVault).toHaveBeenCalledWith({
       id: mockVaultId,
       name: vaultName,
       version: VERSION.v1,
@@ -98,6 +102,6 @@ describe('createVault', () => {
     const result = await thunk(dispatch, getState).catch((e) => e)
     expect(result.type).toBe(createVault.rejected.type)
     expect(result.error.message).toContain('Invalid vault data')
-    expect(createVaultApi).not.toHaveBeenCalled()
+    expect(createUnprotectedVault).not.toHaveBeenCalled()
   })
 })

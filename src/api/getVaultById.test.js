@@ -1,7 +1,6 @@
 import { getVaultById } from './getVaultById'
 import { pearpassVaultClient } from '../instances'
 import { getMasterPasswordEncryption } from './getMasterPasswordEncryption'
-import { getVaultEncryption } from './getVaultEncryption'
 import { listVaults } from './listVaults'
 
 jest.mock('../instances', () => ({
@@ -17,10 +16,6 @@ jest.mock('../instances', () => ({
 
 jest.mock('./listVaults', () => ({
   listVaults: jest.fn()
-}))
-
-jest.mock('./getVaultEncryption', () => ({
-  getVaultEncryption: jest.fn()
 }))
 
 jest.mock('./getMasterPasswordEncryption', () => ({
@@ -42,10 +37,11 @@ describe('getVaultById', () => {
   describe('when password is provided', () => {
     it('throws error if vault encryption data does not exist', async () => {
       listVaults.mockResolvedValue([{ id: 'vault1' }])
-      getVaultEncryption.mockResolvedValue({})
-      getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
+      pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({
+        status: false
       })
+      pearpassVaultClient.getDecryptionKey.mockResolvedValue('hashedPassword')
+      pearpassVaultClient.decryptVaultKey.mockResolvedValue(null)
 
       await expect(
         getVaultById('vault1', { password: 'password' })
@@ -53,16 +49,18 @@ describe('getVaultById', () => {
     })
 
     it('throws error if decryption fails (decryptVaultKey returns falsy)', async () => {
-      listVaults.mockResolvedValue([{ id: 'vault1' }])
       const vaultEncryptionRes = {
         ciphertext: 'cipher',
         nonce: 'nonce',
         salt: 'salt'
       }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
-      getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
+      listVaults.mockResolvedValue([
+        { id: 'vault1', encryption: vaultEncryptionRes }
+      ])
+      pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({
+        status: false
       })
+      pearpassVaultClient.getDecryptionKey.mockResolvedValue('hashedPassword')
       pearpassVaultClient.decryptVaultKey.mockResolvedValue(null)
 
       await expect(
@@ -71,16 +69,15 @@ describe('getVaultById', () => {
     })
 
     it('initializes the vault if activeVaultGetStatus returns false', async () => {
-      listVaults.mockResolvedValue([{ id: 'vault1' }])
       const vaultEncryptionRes = {
         ciphertext: 'cipher',
         nonce: 'nonce',
         salt: 'salt'
       }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
-      getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
-      })
+      listVaults.mockResolvedValue([
+        { id: 'vault1', encryption: vaultEncryptionRes }
+      ])
+      pearpassVaultClient.getDecryptionKey.mockResolvedValue('hashedPassword')
       pearpassVaultClient.decryptVaultKey.mockResolvedValue('encryptionKey')
       pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({
         status: false
@@ -97,16 +94,15 @@ describe('getVaultById', () => {
     })
 
     it('reinitializes the vault if the current active vault id does not match', async () => {
-      listVaults.mockResolvedValue([{ id: 'vault1' }])
       const vaultEncryptionRes = {
         ciphertext: 'cipher',
         nonce: 'nonce',
         salt: 'salt'
       }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
-      getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
-      })
+      listVaults.mockResolvedValue([
+        { id: 'vault1', encryption: vaultEncryptionRes }
+      ])
+      pearpassVaultClient.getDecryptionKey.mockResolvedValue('hashedPassword')
       pearpassVaultClient.decryptVaultKey.mockResolvedValue('encryptionKey')
       pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({
         status: true
@@ -125,13 +121,14 @@ describe('getVaultById', () => {
     })
 
     it('returns the current vault if the active vault id matches', async () => {
-      listVaults.mockResolvedValue([{ id: 'vault1' }])
       const vaultEncryptionRes = {
         ciphertext: 'cipher',
         nonce: 'nonce',
         salt: 'salt'
       }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
+      listVaults.mockResolvedValue([
+        { id: 'vault1', encryption: vaultEncryptionRes }
+      ])
 
       pearpassVaultClient.getDecryptionKey.mockResolvedValue('hashedPassword')
       pearpassVaultClient.decryptVaultKey.mockResolvedValue('encryptionKey')
@@ -146,28 +143,15 @@ describe('getVaultById', () => {
   })
 
   describe('when no password is provided', () => {
-    it('throws error if vault encryption data does not exist', async () => {
-      listVaults.mockResolvedValue([{ id: 'vault1' }])
-      getVaultEncryption.mockResolvedValue({})
-      getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
-      })
-
-      await expect(getVaultById('vault1')).rejects.toThrow(
-        'Error decrypting vault key'
-      )
-    })
-
     it('throws error if decryption fails (decryptVaultKey returns falsy)', async () => {
       listVaults.mockResolvedValue([{ id: 'vault1' }])
-      const vaultEncryptionRes = {
-        ciphertext: 'cipher',
-        nonce: 'nonce',
-        salt: 'salt'
-      }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
       getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
+        hashedPassword: 'hashedPassword',
+        ciphertext: 'cipher',
+        nonce: 'nonce'
+      })
+      pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({
+        status: false
       })
       pearpassVaultClient.decryptVaultKey.mockResolvedValue(null)
 
@@ -178,14 +162,10 @@ describe('getVaultById', () => {
 
     it('initializes the vault if activeVaultGetStatus returns false', async () => {
       listVaults.mockResolvedValue([{ id: 'vault1' }])
-      const vaultEncryptionRes = {
-        ciphertext: 'cipher',
-        nonce: 'nonce',
-        salt: 'salt'
-      }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
       getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
+        hashedPassword: 'hashedPassword',
+        ciphertext: 'cipher',
+        nonce: 'nonce'
       })
       pearpassVaultClient.decryptVaultKey.mockResolvedValue('encryptionKey')
       pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({
@@ -204,14 +184,10 @@ describe('getVaultById', () => {
 
     it('reinitializes the vault if the current active vault id does not match', async () => {
       listVaults.mockResolvedValue([{ id: 'vault1' }])
-      const vaultEncryptionRes = {
-        ciphertext: 'cipher',
-        nonce: 'nonce',
-        salt: 'salt'
-      }
-      getVaultEncryption.mockResolvedValue(vaultEncryptionRes)
       getMasterPasswordEncryption.mockResolvedValue({
-        hashedPassword: 'hashedPassword'
+        hashedPassword: 'hashedPassword',
+        ciphertext: 'cipher',
+        nonce: 'nonce'
       })
       pearpassVaultClient.decryptVaultKey.mockResolvedValue('encryptionKey')
       pearpassVaultClient.activeVaultGetStatus.mockResolvedValue({

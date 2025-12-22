@@ -1,4 +1,5 @@
-/** @typedef {import('pear-interface')} */ /* global Pear */
+/* eslint-disable */
+/** @typedef {import('pear-interface')} */
 
 export class Logger {
   constructor({ debugMode }) {

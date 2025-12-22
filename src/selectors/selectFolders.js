@@ -1,4 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
+import { matchPatternToValue } from 'pear-apps-utils-pattern-search'
 
 import { selectRecords } from './selectRecords'
 
@@ -6,7 +7,6 @@ export const selectFolders = (filters) =>
   createSelector(
     selectRecords({
       filters: {
-        searchPattern: filters?.searchPattern,
         isFolder: true
       }
     }),
@@ -15,6 +15,14 @@ export const selectFolders = (filters) =>
       data: records?.reduce(
         (acc, record) => {
           const folder = record.folder
+
+          if (filters?.searchPattern) {
+            const isMatch = matchPatternToValue(filters.searchPattern, folder)
+
+            if (!isMatch) {
+              return acc
+            }
+          }
 
           if (record.isFavorite) {
             acc.favorites.records.push(record)
